@@ -259,15 +259,19 @@ local function rockspec_cleanup(rockspec: Rockspec)
    rockspec.format_is_at_least = nil
    rockspec.local_abs_filename = nil
    rockspec.rocks_provided = nil
-   for _, list in ipairs({"dependencies", "build_dependencies", "test_dependencies"}) do
-      if (rockspec as {string: Dependencies})[list] and not next((rockspec as {string: Dependencies})[list]) then
-         (rockspec as {string: Dependencies})[list] = nil
-      end
-   end
-   for _, list in ipairs({"dependencies", "build_dependencies", "test_dependencies"}) do
-      if (rockspec as {string: Dependencies})[list] then
-         for i, entry in ipairs((rockspec as {string: Dependencies})[list]) do
-            (rockspec as {string: Dependencies})[list][i] = tostring(entry)
+
+   local dep_lists: {string: Dependencies} = {
+      dependencies = rockspec.dependencies,
+      build_dependencies = rockspec.build_dependencies,
+      test_dependencies = rockspec.test_dependencies,
+   }
+
+   for name, data in pairs(dep_lists) do
+      if not next(data) then
+         (rockspec as {string: Dependencies})[name] = nil
+      else
+         for i, item in ipairs(data) do
+            data[i] = tostring(item)
          end
       end
    end

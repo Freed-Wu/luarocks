@@ -1,4 +1,4 @@
-local _tl_compat; if (tonumber((_VERSION or ''):match('[%d.]*$')) or 0) < 5.3 then local p, m = pcall(require, 'compat53.module'); if p then _tl_compat = m end end; local assert = _tl_compat and _tl_compat.assert or assert; local io = _tl_compat and _tl_compat.io or io; local ipairs = _tl_compat and _tl_compat.ipairs or ipairs; local string = _tl_compat and _tl_compat.string or string; local table = _tl_compat and _tl_compat.table or table
+local _tl_compat; if (tonumber((_VERSION or ''):match('[%d.]*$')) or 0) < 5.3 then local p, m = pcall(require, 'compat53.module'); if p then _tl_compat = m end end; local assert = _tl_compat and _tl_compat.assert or assert; local io = _tl_compat and _tl_compat.io or io; local ipairs = _tl_compat and _tl_compat.ipairs or ipairs; local pairs = _tl_compat and _tl_compat.pairs or pairs; local string = _tl_compat and _tl_compat.string or string; local table = _tl_compat and _tl_compat.table or table
 local write_rockspec = {}
 
 
@@ -12,7 +12,7 @@ local rockspecs = require("luarocks.rockspecs")
 local type_rockspec = require("luarocks.type.rockspec")
 local util = require("luarocks.util")
 
-local argparse = require("luarocks.vendor.argparse")
+
 
 
 
@@ -259,15 +259,19 @@ local function rockspec_cleanup(rockspec)
    rockspec.format_is_at_least = nil
    rockspec.local_abs_filename = nil
    rockspec.rocks_provided = nil
-   for _, list in ipairs({ "dependencies", "build_dependencies", "test_dependencies" }) do
-      if (rockspec)[list] and not next((rockspec)[list]) then
-         (rockspec)[list] = nil
-      end
-   end
-   for _, list in ipairs({ "dependencies", "build_dependencies", "test_dependencies" }) do
-      if (rockspec)[list] then
-         for i, entry in ipairs((rockspec)[list]) do
-            (rockspec)[list][i] = tostring(entry)
+
+   local dep_lists = {
+      dependencies = rockspec.dependencies,
+      build_dependencies = rockspec.build_dependencies,
+      test_dependencies = rockspec.test_dependencies,
+   }
+
+   for name, data in pairs(dep_lists) do
+      if not next(data) then
+         (rockspec)[name] = nil
+      else
+         for i, item in ipairs(data) do
+            data[i] = tostring(item)
          end
       end
    end
